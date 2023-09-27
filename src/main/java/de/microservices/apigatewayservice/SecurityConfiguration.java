@@ -28,7 +28,6 @@ public class SecurityConfiguration {
     @Bean
     SecurityWebFilterChain webFluxSecurityFilterChain(ServerHttpSecurity http) {
         http.csrf(csrf -> csrf.disable())
-                .cors().disable()
                 .authorizeExchange()
                 .pathMatchers("/files").authenticated()
                 .anyExchange().permitAll()
