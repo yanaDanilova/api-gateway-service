@@ -13,6 +13,7 @@ import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
+import java.security.Principal;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.stream.Collectors;
@@ -80,7 +81,10 @@ public class JwtAuthSecurityFilter implements WebFilter {
             return chain.filter(exchange)
                     .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authenticationToken));
 
+
         }
+
+
         return chain.filter(exchange);
     }
 
