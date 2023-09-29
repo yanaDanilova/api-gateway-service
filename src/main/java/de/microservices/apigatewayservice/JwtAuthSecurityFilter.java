@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 public class JwtAuthSecurityFilter implements WebFilter {
 
     private final JwtService jwtService;
-
+    List<? extends GrantedAuthority> authorities = new ArrayList<>();
     @Autowired
     public JwtAuthSecurityFilter(JwtService jwtService) {
         this.jwtService = jwtService;
@@ -44,18 +44,27 @@ public class JwtAuthSecurityFilter implements WebFilter {
 
  //       if (payloadOpt.isPresent() && payloadOpt.get().available()) {
 //            var payload = payloadOpt.get();
-        if(jwtService.isJwtValid(jwt)){
-            List<? extends GrantedAuthority> authorities = new ArrayList<>();
-            if (jwtService.getRolesFromToken(jwt) != null && jwtService.getRolesFromToken(jwt).size() != 0) {
-                List<String> roles = jwtService.getRolesFromToken(jwt);
-                authorities=roles.stream()
-                        .map(role -> new SimpleGrantedAuthority(Arrays.toString(role.getBytes())))
+
+        if (jwtService.isJwtValid(jwt)) {
+            List<String> roles = jwtService.getRolesFromToken(jwt);
+
+            if (roles != null && !roles.isEmpty()) {
+                authorities = roles.stream()
+                        .map(SimpleGrantedAuthority::new) // Create SimpleGrantedAuthority with role name
                         .collect(Collectors.toList());
             }
-            var authentication = new UsernamePasswordAuthenticationToken(jwtService.getUsernameFromToken(jwt),null,authorities);
+
+            var authentication = new UsernamePasswordAuthenticationToken(
+                    jwtService.getUsernameFromToken(jwt),
+                    null,
+                    authorities
+            );
+
+            System.out.println(authorities);
             return chain.filter(exchange)
                     .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication));
         }
+
         return chain.filter(exchange);
     }
 

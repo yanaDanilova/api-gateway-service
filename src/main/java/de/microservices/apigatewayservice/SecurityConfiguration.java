@@ -40,7 +40,9 @@ public class SecurityConfiguration {
                 .cors().disable()
                 .authorizeExchange()
                 .pathMatchers("/files/**").authenticated()
-                .pathMatchers("/reactivemongo/one/*").authenticated()
+                .pathMatchers("/reactivemongo/one/**").authenticated()
+                .pathMatchers("/expense/user").hasRole("USER")
+                .pathMatchers("/expense/admin").hasRole("ADMIN")
                 .anyExchange().permitAll()
                 .and()
                 .addFilterAt(jwtAuthSecurityFilter,SecurityWebFiltersOrder.AUTHENTICATION);
