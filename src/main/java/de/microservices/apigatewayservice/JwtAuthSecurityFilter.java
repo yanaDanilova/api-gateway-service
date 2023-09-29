@@ -12,10 +12,13 @@ import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
+import reactor.util.annotation.NonNull;
 
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
@@ -28,8 +31,37 @@ public class JwtAuthSecurityFilter implements WebFilter {
         this.jwtService = jwtService;
     }
 
+    @NonNull
+    @Override
+    public Mono<Void> filter(@NonNull ServerWebExchange exchange, @NonNull WebFilterChain chain) {
+//        var header = exchange.getRequest().getHeaders().getFirst(headerName);
+ //       var payloadOpt = jwsService.verify(header);
+        String authHeader = exchange.getRequest().getHeaders().getFirst("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return chain.filter(exchange);
+        }
+        String jwt = authHeader.substring(7);
 
-    @NotNull
+ //       if (payloadOpt.isPresent() && payloadOpt.get().available()) {
+//            var payload = payloadOpt.get();
+        if(jwtService.isJwtValid(jwt)){
+            List<? extends GrantedAuthority> authorities = new ArrayList<>();
+            if (jwtService.getRolesFromToken(jwt) != null && jwtService.getRolesFromToken(jwt).size() != 0) {
+                List<String> roles = jwtService.getRolesFromToken(jwt);
+                authorities=roles.stream()
+                        .map(role -> new SimpleGrantedAuthority(Arrays.toString(role.getBytes())))
+                        .collect(Collectors.toList());
+            }
+            var authentication = new UsernamePasswordAuthenticationToken(jwtService.getUsernameFromToken(jwt),null,authorities);
+            return chain.filter(exchange)
+                    .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication));
+        }
+        return chain.filter(exchange);
+    }
+
+
+
+   /* @NotNull
     @Override
     public Mono<Void> filter(@NotNull ServerWebExchange exchange, @NotNull WebFilterChain chain) {
         String authHeader = exchange.getRequest().getHeaders().getFirst("Authorization");
@@ -87,7 +119,7 @@ public class JwtAuthSecurityFilter implements WebFilter {
 
         return chain.filter(exchange);
     }
-
+*/
 
 
 }

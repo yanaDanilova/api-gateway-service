@@ -39,7 +39,8 @@ public class SecurityConfiguration {
         http.csrf(csrf -> csrf.disable())
                 .cors().disable()
                 .authorizeExchange()
-                .pathMatchers("/files").authenticated()
+                .pathMatchers("/files/**").authenticated()
+                .pathMatchers("/reactivemongo/one/*").authenticated()
                 .anyExchange().permitAll()
                 .and()
                 .addFilterAt(jwtAuthSecurityFilter,SecurityWebFiltersOrder.AUTHENTICATION);
