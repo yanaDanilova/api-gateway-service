@@ -43,6 +43,7 @@ public class SecurityConfiguration {
                 .pathMatchers("/reactivemongo/one/**").authenticated()
                 .pathMatchers("/expense/user").hasRole("USER")
                 .pathMatchers("/expense/admin").hasRole("ADMIN")
+                .pathMatchers("/expense/useradmin").hasAnyRole("USER","ADMIN")
                 .anyExchange().permitAll()
                 .and()
                 .addFilterAt(jwtAuthSecurityFilter,SecurityWebFiltersOrder.AUTHENTICATION);
